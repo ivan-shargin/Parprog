@@ -18,27 +18,21 @@ int main (int argc,char **argv)
     double C = a * tau / h;
     int j = 0, m = 0, k = 0;
     int len = (M + 1) * (K + 1);
-    double *Solution;
 
-    // for (j = 0;j < len; j++)
-    // {
-    //     // f[j] = sin(2 * 3.14 * j / M) / 100;
-    //     f[j] = 0;
-    // }
+    for (j = 0;j < len; j++)
+    {
+        f[j] = 0;
+    }
 
-    // for (m = 0;m <= M; m++)
-    // {
-    //     // U0[m] = (m * m - M * m + M * M / 4) / 1000.0;
-    //     U0[m] = 0;
-    //     Solution[m] = U0[m];
-    // }
+    for (m = 0;m <= M; m++)
+    {
+        U0[m] = 0;
+    }
 
-    // for (m = 0;m <= 100; m++)
-    // {
-    //     // U0[m] = (m * m - M * m + M * M / 4) / 1000.0;
-    //     U0[m] = -(m - 100) * (m -100) / 100 + 100;
-    //     Solution[m] = U0[m];
-    // }
+    for (m = 0;m <= 100; m++)
+    {
+        U0[m] = -(m - 100) * (m -100) / 100 + 100;
+    }
 
     int size = 0;
     int rank = 0;
@@ -46,16 +40,21 @@ int main (int argc,char **argv)
     MPI_Comm_size(MPI_COMM_WORLD, &size);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-    if (rank == 0){
-        Solution = malloc(len * sizeof(double));
-        MPI_Send()
+    if (size > 1){
+        int width = (M + 1)/ (size - 1) + 1
+        max_m = (M + 1)/ (size - 1) * (rank + 1);
+        min_m = (M + 1)/ (size - 1) * rank;
+        if (max_m > M) max_m = M;
     }
     else{
-        MPI_Recv()
+        width = M + 1;
+        max_m = M;
+        min_m = 0;
     }
 
+    double Solution = malloc(sizeof(double) * width);
     double t1 = MPI_Wtime();
-    computing_cycle(size, rank, f, Solution, C, tau, K, M);
+    computing_cycle(size, rank, f, &U0[min_m], Solution, C, tau, K, M);
     double t2 = MPI_Wtime();
 
     Times[rank] = t2 - t1;
