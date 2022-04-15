@@ -60,10 +60,9 @@ int main (int argc,char **argv)
     printf("For rank = %d computing took %f\n", rank, time);
 
     int root = 0;
-    if (rank == root){
-        double *output = (double*) malloc(len * sizeof(double));
-        MPI_Gather(Solution, width * K, MPI_DOUBLE, output, width * K, MPI_DOUBLE, root, MPI_COMM_WORLD);
 
+    if (rank == root){
+        double *output = (double*) malloc(M * K / D_k * sizeof(double));
         FILE *file = NULL;
         file = fopen("output.bin", "wb");
         if (file == NULL){
@@ -72,16 +71,16 @@ int main (int argc,char **argv)
             return -1;
         }
 
-        for(k = 0;k < K;k += D_k)
-            for (i = k * M ;i < (k+1) * M; i++){
-                fprintf(file, "%f", output[i]);
+        for(k = 0;k < K / D_k;k++){
+            for(j = 1;j < size;j++){
+                MPI_Recv(output + k * M + j * width, );
             }
+        }
 
         fclose(file);
         free(output);
-    }else{
-        MPI_Gather(Solution, width * K, MPI_DOUBLE, NULL, width * K, MPI_DOUBLE, root, MPI_COMM_WORLD);
     }
+
 
     free(Solution);
     free(f);
