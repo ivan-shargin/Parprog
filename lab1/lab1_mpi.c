@@ -7,9 +7,9 @@
 const int M = 10000;
 const int K = 1000;
 const double x0 = 0, xM = 1;
-const double a = 0.5;
+const double a = 0.1;
 const double T = 1;
-const int D_k = 100;
+const int D_k = 10;
 
 int main (int argc,char **argv)
 {
@@ -42,8 +42,8 @@ int main (int argc,char **argv)
         U0[m] = 0;
     }
 
-    for (m = 0;m <= 100; m++){
-        U0[m] = -(m - 100) * (m -100) / 100;
+    for (m = 0;m < 2000; m++){
+        U0[m] = 1. / (m + 1.) - 0.0005 + (1. - m / 2000.);
     }
 
     double *f = (double *) malloc(sizeof(double) * width * K);
@@ -60,9 +60,17 @@ int main (int argc,char **argv)
     printf("For rank = %d computing took %f\n", rank, time);
 
     int root = 0;
+    MPI_Barrier(MPI_COMM_WORLD);
 
     if (rank == root){
         double *output = (double*) malloc(M * K / D_k * sizeof(double));
+
+        for(i = 0;i < K / D_k;i ++){
+            k = i * D_k;
+            MPI_Gather(Solution + k * width, width, MPI_DOUBLE,
+            output + i * M, width, MPI_DOUBLE, root, MPI_COMM_WORLD);
+        }
+
         FILE *file = NULL;
         file = fopen("output.bin", "wb");
         if (file == NULL){
@@ -71,15 +79,23 @@ int main (int argc,char **argv)
             return -1;
         }
 
-        for(k = 0;k < K / D_k;k++){
-            for(j = 1;j < size;j++){
-                MPI_Recv(output + k * M + j * width, );
-            }
+        for(i = 0;i < K / D_k * M; i++){
+            fprintf(file, "%f", output[i]);
+            fprintf(file, "%c", ',');
         }
 
-        fclose(file);
         free(output);
+        fclose(file);
+
+    }else{
+        for(i = 0;i < K / D_k;i ++){
+            k = i * D_k;
+            MPI_Gather(Solution + k * width, width, MPI_DOUBLE,
+            NULL, width , MPI_DOUBLE, root, MPI_COMM_WORLD);
+        }
+
     }
+
 
 
     free(Solution);

@@ -1,4 +1,5 @@
 #include <mpi.h>
+#include <stdio.h>
 int ind(int k, int m, int width)
 {
     return k * width + m;
@@ -44,6 +45,7 @@ int computing_cycle(int size, int rank, double* f, double* U0, double* Solution,
         min_m = 0;
         width = M;
     }
+    printf("process with rank = %d has width = %d min_m = %d max_m = %d\n", rank, width, min_m, max_m);
 
     for (m = min_m; m < max_m; m++){
         int m1 = m - min_m;
@@ -58,10 +60,6 @@ int computing_cycle(int size, int rank, double* f, double* U0, double* Solution,
             int i3 = ind(1, m1, width);
             int i0 = ind(0, m1, width);
             Solution[i3] = (U0[m1 - 1] + U0[m1 + 1])* 0.5 + C * 0.5 * (U0[m1 - 1] - U0[m1 + 1]) + tau * f[i0];
-            trash = Solution[i3];
-            trash = U0[m1 - 1];
-            trash = U0[m1 + 1];
-            trash = f[i0];
         }
 
         if (m == 0){
@@ -92,7 +90,8 @@ int computing_cycle(int size, int rank, double* f, double* U0, double* Solution,
         next, tag, MPI_COMM_WORLD, send_reqs + 1);
     }
 
-    for (k = 0;k < K - 1; k++){
+    for (k = 1;k < K - 1; k++){
+
         double left, right;
         if (prev >= 0){
             MPI_Irecv(&left, 1, MPI_DOUBLE, prev, tag,
@@ -111,24 +110,31 @@ int computing_cycle(int size, int rank, double* f, double* U0, double* Solution,
                 int i2 = ind(k, m1 + 1, width);
                 int i3 = ind(k + 1, m1, width);
                 int i0 = ind(k, m1, width);
-                template(f, Solution, i0, i1, i2, i3, C, tau);
+                Solution[i3] = (Solution[i1] + Solution[i2]) * 0.5 +
+                C * 0.5 * (Solution[i1] - Solution[i2]) + tau * f[i0];
+                // template(f, Solution, i0, i1, i2, i3, C, tau);
             }
 
             if (m == 0){
                 int i1 = ind(k, m1, width);
                 int i2 = ind(k, m1 + 2, width);
                 int i3 = ind(k + 1, m1, width);
-                template_left(f, Solution, i1, i2, i3, C, tau);
+                Solution[i3] = Solution[i1] +
+                C * 0.5 * (Solution[i1] - Solution[i2]) + tau * f[i1];
+                // template_left(f, Solution, i1, i2, i3, C, tau);
             }
 
             if (m == M-1){
                 int i1 = ind(k, m1 - 2, width);
                 int i2 = ind(k, m1, width);
                 int i3 = ind(k + 1, m1, width);
-                template_right(f, Solution, i1, i2, i3, C, tau);
+                Solution[i3] = Solution[i2] +
+                C * 0.5 * (Solution[i1] - Solution[i2]) + tau * f[i2];
+                // template_right(f, Solution, i1, i2, i3, C, tau);
             }
         }
 
+        MPI_Barrier(MPI_COMM_WORLD);
         if (prev >= 0){
             MPI_Wait(recv_reqs, MPI_STATUSES_IGNORE);
             int i2 = ind(k, 1, width);
@@ -142,9 +148,9 @@ int computing_cycle(int size, int rank, double* f, double* U0, double* Solution,
 
         if (next < size){
             MPI_Wait(recv_reqs + 1, MPI_STATUSES_IGNORE);
-            int i1 = ind(0, width - 2, width);
-            int i3 = ind(1, width - 1, width);
-            int i0 = ind(0, width - 1, width);
+            int i1 = ind(k, width - 2, width);
+            int i3 = ind(k + 1, width - 1, width);
+            int i0 = ind(k, width - 1, width);
             Solution[i3] = (Solution[i1] + right) * 0.5 +
             C * 0.5 * (Solution[i1] - right) + tau * f[i0];
             MPI_Isend(&Solution[i3], 1, MPI_DOUBLE, next, tag,
