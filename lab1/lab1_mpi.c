@@ -4,10 +4,10 @@
 #include <mpi.h>
 #include "computing_cycle.h"
 
-const int M = 10000;
+const int M = 1000;
 const int K = 1000;
 const double x0 = 0, xM = 1;
-const double a = 0.1;
+const double a = 0.2;
 const double T = 1;
 const int D_k = 10;
 
@@ -42,9 +42,11 @@ int main (int argc,char **argv)
         U0[m] = 0;
     }
 
-    for (m = 0;m < 2000; m++){
-        U0[m] = 1. / (m + 1.) - 0.0005 + (1. - m / 2000.);
+    for (m = 3. * M / 10.; m < 7. * M / 10.; m++){
+        U0[m] = sin(2 * 3.14 * m / 500);
     }
+
+
 
     double *f = (double *) malloc(sizeof(double) * width * K);
     for (j = 0;j < width * K; j++){

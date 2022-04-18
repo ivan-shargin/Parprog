@@ -134,7 +134,6 @@ int computing_cycle(int size, int rank, double* f, double* U0, double* Solution,
             }
         }
 
-        MPI_Barrier(MPI_COMM_WORLD);
         if (prev >= 0){
             MPI_Wait(recv_reqs, MPI_STATUSES_IGNORE);
             int i2 = ind(k, 1, width);
