@@ -4,15 +4,16 @@
 #include <mpi.h>
 #include "computing_cycle.h"
 
-const int M = 1000;
+const int M = 5000;
 const int K = 1000;
 const double x0 = 0, xM = 1;
-const double a = 0.2;
+const double a = 0.1;
 const double T = 1;
-const int D_k = 10;
 
 int main (int argc,char **argv)
 {
+    int D_k = K / 100;
+    int M_k = M / 1000;
     double U0[M];
     double h = (xM - x0) / (M - 1);
     double tau = T / (K - 1);
@@ -26,16 +27,24 @@ int main (int argc,char **argv)
     MPI_Comm_size(MPI_COMM_WORLD, &size);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-    if (size > 1){
-        max_m = M / size * (rank + 1);
-        min_m = M / size * rank;
-        if (max_m > M) max_m = M;
-        width = max_m - min_m;
+    int *Arr_width = (int*)malloc(size * sizeof(int));
+    for (j = 0;j<size;j++){
+        max_m = M / size * (j + 1);
+        min_m = M / size * j;
+        if ((j == size - 1) && (max_m < M)) max_m = M;
+        Arr_width[j] = max_m - min_m;
     }
-    else{
-        max_m = M;
-        min_m = 0;
-        width = M;
+
+    max_m = M / size * (rank + 1);
+    min_m = M / size * rank;
+    width = Arr_width[rank];
+
+    int *displs = (int*)malloc(size * sizeof(int));
+    for(j = 0;j < size; j++){
+        displs[j] = 0;
+        for(i=0;i < j; i++){
+            displs[j] += Arr_width[i];
+        }
     }
 
     for (m = 0;m < M; m++){
@@ -43,10 +52,8 @@ int main (int argc,char **argv)
     }
 
     for (m = 3. * M / 10.; m < 7. * M / 10.; m++){
-        U0[m] = sin(2 * 3.14 * m / 500);
+        U0[m] = sin(2 * 3.14 * m / 100);
     }
-
-
 
     double *f = (double *) malloc(sizeof(double) * width * K);
     for (j = 0;j < width * K; j++){
@@ -66,11 +73,14 @@ int main (int argc,char **argv)
 
     if (rank == root){
         double *output = (double*) malloc(M * K / D_k * sizeof(double));
+        for(j=0;j<size;j++){
+            printf("displs: %d\n", displs[j]);
+        }
 
         for(i = 0;i < K / D_k;i ++){
             k = i * D_k;
-            MPI_Gather(Solution + k * width, width, MPI_DOUBLE,
-            output + i * M, width, MPI_DOUBLE, root, MPI_COMM_WORLD);
+            MPI_Gatherv(Solution + k * width, width, MPI_DOUBLE,
+            output + i * M, Arr_width, displs, MPI_DOUBLE, root, MPI_COMM_WORLD);
         }
 
         FILE *file = NULL;
@@ -92,13 +102,10 @@ int main (int argc,char **argv)
     }else{
         for(i = 0;i < K / D_k;i ++){
             k = i * D_k;
-            MPI_Gather(Solution + k * width, width, MPI_DOUBLE,
-            NULL, width , MPI_DOUBLE, root, MPI_COMM_WORLD);
+            MPI_Gatherv(Solution + k * width, width, MPI_DOUBLE,
+            NULL, Arr_width, displs, MPI_DOUBLE, root, MPI_COMM_WORLD);
         }
-
     }
-
-
 
     free(Solution);
     free(f);

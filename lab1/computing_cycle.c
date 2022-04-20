@@ -37,7 +37,7 @@ int computing_cycle(int size, int rank, double* f, double* U0, double* Solution,
     if (size > 1){
         max_m = M / size * (rank + 1);
         min_m = M / size * rank;
-        if (max_m > M) max_m = M;
+        if ((rank == size - 1) && (max_m < M)) max_m = M;
         width = max_m - min_m;
     }
     else{
