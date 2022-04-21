@@ -5,15 +5,17 @@
 #include "computing_cycle.h"
 
 const int M = 5000;
-const int K = 1000;
+const int K = 5000;
 const double x0 = 0, xM = 1;
-const double a = 0.1;
+const double a = 0.5;
 const double T = 1;
+const int N_k = 100;
+const int N_m = 5000;
 
 int main (int argc,char **argv)
 {
-    int D_k = K / 100;
-    int M_k = M / 1000;
+    int D_k = K / N_k;
+    int D_m = M / N_m;
     double U0[M];
     double h = (xM - x0) / (M - 1);
     double tau = T / (K - 1);
@@ -52,7 +54,7 @@ int main (int argc,char **argv)
     }
 
     for (m = 3. * M / 10.; m < 7. * M / 10.; m++){
-        U0[m] = sin(2 * 3.14 * m / 100);
+        U0[m] = sin(2 * 3.14 * m / 2 / M * 5);
     }
 
     double *f = (double *) malloc(sizeof(double) * width * K);
@@ -72,12 +74,9 @@ int main (int argc,char **argv)
     MPI_Barrier(MPI_COMM_WORLD);
 
     if (rank == root){
-        double *output = (double*) malloc(M * K / D_k * sizeof(double));
-        for(j=0;j<size;j++){
-            printf("displs: %d\n", displs[j]);
-        }
+        double *output = (double*) malloc(M * N_k * sizeof(double));
 
-        for(i = 0;i < K / D_k;i ++){
+        for(i = 0;i < N_k;i++){
             k = i * D_k;
             MPI_Gatherv(Solution + k * width, width, MPI_DOUBLE,
             output + i * M, Arr_width, displs, MPI_DOUBLE, root, MPI_COMM_WORLD);
@@ -91,16 +90,23 @@ int main (int argc,char **argv)
             return -1;
         }
 
-        for(i = 0;i < K / D_k * M; i++){
+        // for(i = 0;i < N_k; i++){
+        //     for(j = 0;j < N_m;j++){
+        //         fprintf(file, "%f", output[i * M + j * D_m]);
+        //         fprintf(file, "%c", ',');
+        //     }
+        // }
+        for(i = 0;i < N_k * M; i++){
             fprintf(file, "%f", output[i]);
             fprintf(file, "%c", ',');
         }
+
 
         free(output);
         fclose(file);
 
     }else{
-        for(i = 0;i < K / D_k;i ++){
+        for(i = 0;i < N_k;i++){
             k = i * D_k;
             MPI_Gatherv(Solution + k * width, width, MPI_DOUBLE,
             NULL, Arr_width, displs, MPI_DOUBLE, root, MPI_COMM_WORLD);
