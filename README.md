@@ -1,2 +1,0 @@
-# Parprog
-MIPT course
