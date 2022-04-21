@@ -1,0 +1,6 @@
+ssh -p 52960 b0190502@remote.vdi.mipt.ru
+iPk1jrq8z
+
+scp -p 52960 b0190502@remote.vdi.mipt.ru:/home/b0190502/output.bin C:\Users\ishar\Documents\Github\Parprog\lab1
+
+scp C:\Users\ishar\Documents\GitHub\Parprog\lab1\lab1_mpi.c -p 52960 b0190502@remote.vdi.mipt.ru:/home/b0190502
