@@ -4,7 +4,7 @@
 #include <mpi.h>
 #include "computing_cycle.h"
 
-const int M = 200000;
+const int M = 500;
 const int K = 100;
 const double x0 = 0, xM = 1;
 const double a = 0.0001;
@@ -73,39 +73,39 @@ int main (int argc,char **argv)
     int root = 0;
     MPI_Barrier(MPI_COMM_WORLD);
 
-    // if (rank == root){
-    //     double *output = (double*) malloc(M * N_k * sizeof(double));
+    if (rank == root){
+        double *output = (double*) malloc(M * N_k * sizeof(double));
 
-    //     for(i = 0;i < N_k;i++){
-    //         k = i * D_k;
-    //         MPI_Gatherv(Solution + k * width, width, MPI_DOUBLE,
-    //         output + i * M, Arr_width, displs, MPI_DOUBLE, root, MPI_COMM_WORLD);
-    //     }
+        for(i = 0;i < N_k;i++){
+            k = i * D_k;
+            MPI_Gatherv(Solution + k * width, width, MPI_DOUBLE,
+            output + i * M, Arr_width, displs, MPI_DOUBLE, root, MPI_COMM_WORLD);
+        }
 
-    //     FILE *file = NULL;
-    //     file = fopen("output.bin", "wb");
-    //     if (file == NULL){
-    //         printf("Can't open the output file!");
-    //         getchar();
-    //         return -1;
-    //     }
+        FILE *file = NULL;
+        file = fopen("output.bin", "wb");
+        if (file == NULL){
+            printf("Can't open the output file!");
+            getchar();
+            return -1;
+        }
 
-    //     for(i = 0;i < N_k * M; i++){
-    //         fprintf(file, "%f", output[i]);
-    //         fprintf(file, "%c", ',');
-    //     }
+        for(i = 0;i < N_k * M; i++){
+            fprintf(file, "%f", output[i]);
+            fprintf(file, "%c", ',');
+        }
 
 
-    //     free(output);
-    //     fclose(file);
+        free(output);
+        fclose(file);
 
-    // }else{
-    //     for(i = 0;i < N_k;i++){
-    //         k = i * D_k;
-    //         MPI_Gatherv(Solution + k * width, width, MPI_DOUBLE,
-    //         NULL, Arr_width, displs, MPI_DOUBLE, root, MPI_COMM_WORLD);
-    //     }
-    // }
+    }else{
+        for(i = 0;i < N_k;i++){
+            k = i * D_k;
+            MPI_Gatherv(Solution + k * width, width, MPI_DOUBLE,
+            NULL, Arr_width, displs, MPI_DOUBLE, root, MPI_COMM_WORLD);
+        }
+    }
 
     free(Solution);
     free(f);
