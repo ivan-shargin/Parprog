@@ -44,7 +44,6 @@ int computing_cycle(int size, int rank, double* f, double* U0, double* Solution,
         min_m = 0;
         width = M;
     }
-    printf("process with rank = %d has width = %d min_m = %d max_m = %d\n", rank, width, min_m, max_m);
 
     for (m = min_m; m < max_m; m++){
         int m1 = m - min_m;
@@ -80,12 +79,12 @@ int computing_cycle(int size, int rank, double* f, double* U0, double* Solution,
     }
 
     if (prev >= 0){
-        MPI_Isend(Solution, 1, MPI_DOUBLE,
+        MPI_Isend(Solution + width, 1, MPI_DOUBLE,
         prev, tag, MPI_COMM_WORLD, send_reqs);
     }
 
     if (next < size){
-        MPI_Isend(Solution + width - 1, 1, MPI_DOUBLE,
+        MPI_Isend(Solution + 2 * width - 1, 1, MPI_DOUBLE,
         next, tag, MPI_COMM_WORLD, send_reqs + 1);
     }
 
@@ -104,7 +103,7 @@ int computing_cycle(int size, int rank, double* f, double* U0, double* Solution,
 
         for (m = min_m; m < max_m; m++){
             int m1 = m - min_m;
-            if ((m != min_m) && (m != max_m)){
+            if ((m != min_m) && (m != max_m - 1)){
                 int i1 = ind(k, m1 - 1, width);
                 int i2 = ind(k, m1 + 1, width);
                 int i3 = ind(k + 1, m1, width);

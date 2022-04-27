@@ -4,8 +4,8 @@
 #include <mpi.h>
 #include "computing_cycle.h"
 
-const int M = 500;
-const int K = 100;
+const int M = 5000;
+const int K = 1000;
 const double x0 = 0, xM = 1;
 const double a = 0.0001;
 const double T = 1;
