@@ -4,13 +4,13 @@
 #include <mpi.h>
 #include "computing_cycle.h"
 
-const int M = 5000;
-const int K = 1000;
+const int M = 500;
+const int K = 100;
 const double x0 = 0, xM = 1;
 const double a = 0.0001;
 const double T = 1;
 const int N_k = 100;
-const int N_m = 5000;
+const int N_m = 500;
 
 int main (int argc,char **argv)
 {
