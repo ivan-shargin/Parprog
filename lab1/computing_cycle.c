@@ -32,7 +32,6 @@ int computing_cycle(int size, int rank, double* f, double* U0, double* Solution,
     int tag = 7;
     int prev = rank - 1;
     int next = rank + 1;
-    double trash = 0;
 
     if (size > 1){
         max_m = M / size * (rank + 1);
