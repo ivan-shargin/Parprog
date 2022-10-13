@@ -1,0 +1,1 @@
+int transpose(double *, double *, int);

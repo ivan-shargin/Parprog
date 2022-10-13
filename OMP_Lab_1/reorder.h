@@ -1,1 +1,0 @@
-double *reorder(double *, int);
