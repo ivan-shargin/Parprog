@@ -1,0 +1,1 @@
+double convolute(double *, double *, int);
