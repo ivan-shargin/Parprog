@@ -8,10 +8,12 @@
 
 int main()
 {
-    const int N = 100;
+    const int N = 500;
 
-    double *A = (double *)malloc(sizeof(double) * N * N);
-    double *B = (double *)malloc(sizeof(double) * N * N);
+    // double *A = (double *)malloc(sizeof(double) * N * N);
+    // double *B = (double *)malloc(sizeof(double) * N * N);
+    double A[N*N];
+    double B[N*N];
 
     for (int i = 0; i < N; i++){
         for (int j = 0; j < N; j++){
@@ -24,9 +26,10 @@ int main()
         }
     }
 
-    double *C = (double *)malloc(sizeof(double) * N * N);
+    // double *C = (double *)malloc(sizeof(double) * N * N);
+    double C[N*N];
     double *B_tr = (double *)malloc(sizeof(double) * N * N);
-    free(B);
+    // free(B);
     transpose(B, B_tr, N);
     #pragma omp parallel firstprivate(A, B_tr, N)
     for (int i = 0; i < N; i++){
@@ -36,8 +39,8 @@ int main()
     }
 
     free(B_tr);
-    free(A);
-    free(C);
+    // free(A);
+    // free(C);
 
 
     
