@@ -8,8 +8,7 @@
 
 int main()
 {
-
-    const int N = 300;
+    const int N = 100;
 
     double *A = (double *)malloc(sizeof(double) * N * N);
     double *B = (double *)malloc(sizeof(double) * N * N);
@@ -24,23 +23,24 @@ int main()
             }
         }
     }
-    // print_matrix(A, N);
 
     double *C = (double *)malloc(sizeof(double) * N * N);
     double *B_tr = (double *)malloc(sizeof(double) * N * N);
     free(B);
     transpose(B, B_tr, N);
-
+    #pragma omp parallel firstprivate(A, B_tr, N)
     for (int i = 0; i < N; i++){
         for (int j = 0; j < N; j++){
             C[i * N + j] = convolute(A + i * N, B_tr + j * N, N);
         }
     }
-    
+
     free(B_tr);
     free(A);
-    free(C);    
+    free(C);
 
+
+    
     // double A_test[4] = {10.0, 0.0, 0.0, 10.0};
     // double B_test[4] = {1.0, 2.0, 3.0, 4.0};
     // int n = 2;
