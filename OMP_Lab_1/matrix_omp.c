@@ -8,14 +8,14 @@
 
 int main()
 {
-    const int N = 100;
+    const int N = 5000;
 
     double *A = (double *)calloc(sizeof(double), N * N);
     double *B = (double *)calloc(sizeof(double), N * N);
   
     for (int i = 0; i < N; i++){
         for (int j = 0; j < N; j++){
-            A[i * N + j] = i * N + j;
+            A[i * N + j] = (i * N + j) / N / N;
             if (i == j){
                 B[i * N + j] = 10.0;
             } else {
@@ -24,11 +24,14 @@ int main()
         }
     }
 
+    double start_time = omp_get_wtime();
     double *C = (double *)calloc(sizeof(double), N * N);    
     double *B_tr = (double *)calloc(sizeof(double), N * N);
-    free(B);
+    
     transpose(B, B_tr, N);
-    #pragma omp parallel firstprivate(A, B_tr, N)
+    free(B);
+
+    #pragma omp parallel for //firstprivate(A, B_tr, N)
     for (int i = 0; i < N; i++){
         for (int j = 0; j < N; j++){
             C[i * N + j] = convolute(A + i * N, B_tr + j * N, N);
@@ -38,6 +41,9 @@ int main()
     free(B_tr);
     free(A);
     free(C);
+    double runtime = omp_get_wtime() - start_time;
+
+    printf("\nruntime was %4.4lf\n", runtime);
 
 
     
