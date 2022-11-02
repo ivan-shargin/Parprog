@@ -28,7 +28,9 @@ int main()
     double *C = (double *)calloc(sizeof(double), N * N);  
 
     //direct strassen
-      
+    for (int i = 1; i <= k-2; i++){
+        
+    }  
     
 
     return 0;    
