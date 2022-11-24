@@ -8,7 +8,7 @@
 
 int main()
 {
-    const int N = 5000;
+    const int N = 500;
 
     double *A = (double *)calloc(sizeof(double), N * N);
     double *B = (double *)calloc(sizeof(double), N * N);
