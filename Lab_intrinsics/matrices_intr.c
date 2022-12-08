@@ -1,17 +1,51 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include "print_matrix.h"
-#include "transpose.h"
-#include "convolute.h"
 #include <omp.h>
+#include <emmintrin.h>
+
+int print_matrix(double *Matrix, int n){
+    printf("\n");
+    for (int i = 0; i < n; i++){
+        for (int j = 0; j < n; j++){
+            printf("%8.1lf", Matrix[i * n + j]);
+        }
+        printf("\n");
+    }
+    return 0;
+}
+
+int transpose(double *Matrix, double *Matrix_tr, int n){    
+    for (int i = 0; i < n; i++){
+        for (int j = 0; j < n; j++){
+            Matrix_tr[j * n + i] = Matrix[i * n + j];
+        }        
+    }
+    return 0;
+}
+
+double convolute(double *A, double *B, int n){
+    double sum = 0.0;
+    __m128d _sum, _Aelem, _Belem, _mul;
+    _sum = _mm_set_pd(0.0, 0.0);
+    for (int i = 0; i < n; i+=2){
+        _Aelem = _mm_set_pd(A[i], A[i+1]);
+        _Belem = _mm_set_pd(B[i], B[i+1]);
+        _mul = _mm_mul_pd(_Aelem, _Belem);
+        _sum = _mm_add_pd(_sum, _mul);
+    }
+    double *result = (double *)malloc(sizeof(double) * 2);
+    _mm_store_pd(result, _sum);
+    sum = result[0] + result[1];
+    return sum;
+}
 
 int main()
 {
     const int N = 1024;
 
-    double *A = (double *)calloc(sizeof(double), N * N);
-    double *B = (double *)calloc(sizeof(double), N * N);
+    double *A = (double *)malloc(sizeof(double) * N * N);
+    double *B = (double *)malloc(sizeof(double) * N * N);
   
     for (int i = 0; i < N; i++){
         for (int j = 0; j < N; j++){
@@ -25,8 +59,8 @@ int main()
     }
 
     double start_time = omp_get_wtime();
-    double *C = (double *)calloc(sizeof(double), N * N);    
-    double *B_tr = (double *)calloc(sizeof(double), N * N);
+    double *C = (double *)malloc(sizeof(double) * N * N);    
+    double *B_tr = (double *)malloc(sizeof(double) * N * N);
     
     transpose(B, B_tr, N);
     free(B);
@@ -64,7 +98,8 @@ int main()
     // }
 
     // print_matrix(C_test, n);
+    
     // free(B_test_tr);
 
-    return 0;    
+    // return 0;    
 }
