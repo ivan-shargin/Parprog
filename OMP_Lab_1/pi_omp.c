@@ -29,4 +29,6 @@ int main ()
 	  run_time = omp_get_wtime() - start_time;
 	  printf("\n pi using %ld steps is %lf in %lf seconds\n ",num_steps,pi,run_time);
       printf("actual number of threads was %d\n", nthreads);
+
+    printf("%lu", sizeof(float));
 }	  
